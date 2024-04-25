@@ -249,7 +249,7 @@ int main(int argc, const char** argv)
         // Now working with optimization backend
         goSATAlgorithm current_alg = (opt_go_algorithm == kUndefinedAlg) ? kBYTEEA : opt_go_algorithm;
 //        goSATAlgorithm::kBYTEEA;
-//        goSATAlgorithm current_alg = kDirect; kCRS2; kISRES; kMLSL; kESCH; kBYTEEA;
+//        goSATAlgorithm current_alg = kDirect; kCRS2; kISRES; kMLSL; kESCH; kBYTEEA; kGA;
 
         gosat::NLoptOptimizer nl_opt(static_cast<nlopt_algorithm>(current_alg));
 ////        gosat::NLoptOptimizer nl_opt;
@@ -283,8 +283,8 @@ int main(int argc, const char** argv)
             }
             status = nl_opt.optimize(func_ptr,
                                      static_cast<unsigned>(model_vec.size()),
-                                     model_vec.data(),
-                                     seed,
+                                     model_vec.data(), // size = n_var; found all init + with 0 fill
+                                     seed, //
                                      init_number.size(),
                                      &minima);
 //          auto end = std::chrono::high_resolution_clock::now();

@@ -112,21 +112,21 @@ const IRSymbol* FPIRGenerator::genNumeralIR
       }
     }
 
-    // add by yx support real const
-    if (expr.get_sort().sort_kind() == Z3_REAL_SORT) {
-        auto result_iter = findSymbol(SymbolKind::kFP64Const, &expr);
-        if (result_iter != m_expr_sym_map.cend())
-            return &(*result_iter).second;
-
-        std::string numeral_str = Z3_ast_to_string(expr.ctx(),static_cast<z3::ast>(expr));
-        double numeral = std::stod(numeral_str);
-        init_number.push_back(numeral);
-//        printf("numeral: str>%s; double>%lf\n",numeral_str.c_str(), numeral);
-
-        Value* value = ConstantFP::get(builder.getDoubleTy(),numeral);
-        auto res_pair = insertSymbol(SymbolKind::kFP64Const, expr, value, 0);
-        return res_pair.first;
-    }
+//    // add by yx support real const
+//    if (expr.get_sort().sort_kind() == Z3_REAL_SORT) {
+//        auto result_iter = findSymbol(SymbolKind::kFP64Const, &expr);
+//        if (result_iter != m_expr_sym_map.cend())
+//            return &(*result_iter).second;
+//
+//        std::string numeral_str = Z3_ast_to_string(expr.ctx(),static_cast<z3::ast>(expr));
+//        double numeral = std::stod(numeral_str);
+//        init_number.push_back(numeral);
+////        printf("numeral: str>%s; double>%lf\n",numeral_str.c_str(), numeral);
+//
+//        Value* value = ConstantFP::get(builder.getDoubleTy(),numeral);
+//        auto res_pair = insertSymbol(SymbolKind::kFP64Const, expr, value, 0);
+//        return res_pair.first;
+//    }
 
     if (expr.decl().decl_kind() == Z3_OP_BNUM) {
         auto result_iter = findSymbol(SymbolKind::kFP64Const, &expr);
@@ -666,9 +666,9 @@ const IRSymbol* FPIRGenerator::genFuncRecursive
     std::vector<const IRSymbol*> arg_syms;
     arg_syms.reserve(expr.num_args());
     for (uint i = 0; i < expr.num_args(); ++i) {
-//        llvm::outs()<<"expr>>>\n"<<expr.arg(i).to_string()<<"\n";
+        llvm::outs()<<"expr>>>\n"<<expr.arg(i).to_string()<<"\n";
 //        if(expr.arg(i).decl().decl_kind() >= Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN &&
-//            expr.arg(i).decl().decl_kind() <= Z3_OP_FPA_RM_TOWARD_ZERO){
+//            expr.arg(i).decl().decl_kind() <= Z3_OP_FPA_RM_TOWARD_ZERO){p
 //            continue;
 //        }
         auto arg_sym = genFuncRecursive(builder, expr.arg(i), is_negated, cov, totalCov, init_number);
@@ -676,7 +676,7 @@ const IRSymbol* FPIRGenerator::genFuncRecursive
     }
     auto res_pair = insertSymbol(kind, expr, nullptr);
     res_pair.first->setValue(genExprIR(builder, res_pair.first, arg_syms, cov, totalCov, init_number));
-//    llvm::outs()<<"IR>>>\n"<<*res_pair.first->getValue()<<"\n";
+    llvm::outs()<<"IR>>>\n"<<*res_pair.first->getValue()<<"\n";
     if (expr.decl().decl_kind() == Z3_OP_FPA_TO_FP) {
       if (expr.num_args() == 1){
         if (fpa_util::isBVVar(expr.arg(0)))

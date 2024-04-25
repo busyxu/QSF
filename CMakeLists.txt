@@ -17,12 +17,11 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # add by zgf
-set(libz3-path /home/aaa/z3-4.6.2/install/lib/libz3.so)
-set(Z3_INCLUDE_DIR /home/aaa/z3-4.6.2/install/include)
+set(libz3-path /home/aaa/fp-solver/z3-4.6.2/install/lib/libz3.so)
+set(Z3_INCLUDE_DIR /home/aaa/fp-solver/z3-4.6.2/install/include)
 
-set(libnlopt-path /home/aaa/nlopt2/build/libnlopt2.so)
-#set(libnlopt-path /home/aaa/fp-solver/nlopt2/install/lib/libnlopt.so)
-#set(libnlopt-path /home/aaa/fp-solver/nlopt2/build-debug/libnlopt2.so)
+#set(libnlopt-path /home/aaa/nlopt2/build/libnlopt2.so)
+set(libnlopt-path /home/aaa/nlopt2/build-debug/libnlopt2.so)
 set(NLOPT_INCLUDE_DIR /home/aaa/nlopt2/install/include)
 
 set(LLVM_DIR /home/aaa/fp-solver/llvm-6/install/lib/cmake/llvm)
