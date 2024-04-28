@@ -58,8 +58,9 @@ int
 NLoptOptimizer::optimize
         (nlopt_func func, unsigned dim, double* x, double* seed, int seed_size, double* min) const noexcept
 {
-    double grad=1024;
-    double func_val = func(dim, x, &grad, nullptr);
+    double cov=1024;
+    double totalCov = 0;
+    double func_val = func(dim, x, &cov, &totalCov);
     if (func_val==0){
         *min=0;
         return 0;
@@ -84,7 +85,7 @@ NLoptOptimizer::optimize
     nlopt_set_stopval(opt, 0);
 //    nlopt_set_xtol_rel(opt, Config.RelTolerance);
 //    nlopt_set_maxeval(opt, Config.MaxEvalCount);
-    nlopt_set_maxtime(opt, 60);//60s
+    nlopt_set_maxtime(opt, 60000);//60s
     nlopt_set_population(opt, 200);
 //    nlopt_set_maxtime(opt, 90);//30s
 //    nlopt_set_population(opt, 300);
@@ -144,6 +145,7 @@ NLoptOptimizer::isSupportedGlobalOptAlg(nlopt_algorithm opt_alg) noexcept
         case NLOPT_GN_ESCH:
         case NLOPT_GN_BYTEEA://add by yx
         case NLOPT_GN_GA://add by yx
+        case NLOPT_GN_MOEA://add by yx
             return true;
         default:
             return false;
@@ -160,6 +162,7 @@ NLoptOptimizer::isRequirePopulation(nlopt_algorithm opt_alg) noexcept
         case NLOPT_GN_ESCH:
         case NLOPT_GN_BYTEEA:
         case NLOPT_GN_GA://add by yx
+        case NLOPT_GN_MOEA://add by yx
             return true;
         default:
             return false;

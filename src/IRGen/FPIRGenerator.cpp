@@ -540,21 +540,16 @@ llvm::Function* FPIRGenerator::genFunction
 
     // add by yx
     Argument* grad_arg = &(*(m_gofunc->arg_begin()+2));
-    llvm::Value* loadCover = builder.CreateLoad(cov);
-//    builder.CreateStore(builder.CreateLoad(totalCov),grad_arg);
-//    builder.CreateStore(return_val_sym->getValue(),grad_arg);
+    Argument* data_arg = &(*(m_gofunc->arg_begin()+3));
+    llvm::Value* loadCov = builder.CreateLoad(cov);
+    llvm::Value* loadTotalCov = builder.CreateLoad(totalCov);
 
-//    llvm::Value* denominator = builder.CreateFAdd(builder.CreateLoad(cov), m_const_one); // cov+1
-//    llvm::Value* covObj = builder.CreateFDiv(m_const_one, denominator);  // 1/(cov+1)
-    llvm::Value* covObj = builder.CreateFSub(builder.CreateLoad(totalCov), loadCover); //totalCov - cov
-//    Argument* grad_arg = &(*(m_gofunc->arg_begin()+2));
-//    builder.CreateStore(return_val_sym->getValue(),grad_arg);
-//    llvm::Value* dis_load = builder.CreateLoad(grad_arg);
-//    llvm::Value* funcV = builder.CreateFAdd(covObj, dis_load);
-    llvm::Value* funcV = builder.CreateFAdd(covObj, return_val_sym->getValue());
+//    llvm::Value* covObj = builder.CreateFSub(loadTotalCov, loadCov); //totalCov - cov
+//    llvm::Value* funcV = builder.CreateFAdd(covObj, return_val_sym->getValue()); totalCov - cov + distance
 
-    builder.CreateStore(loadCover,grad_arg); //record the coverage info
-    builder.CreateRet(funcV);
+    builder.CreateStore(loadCov,grad_arg); //cov
+    builder.CreateStore(loadTotalCov, data_arg); //totalcov
+    builder.CreateRet(return_val_sym->getValue());
 
 //    llvm::outs()<<"[add by yx] m_gofunc8:\n";
 //    m_gofunc->print(llvm::outs());

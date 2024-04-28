@@ -41,6 +41,7 @@ enum goSATAlgorithm {
     kESCH   = NLOPT_GN_ESCH,
     kBYTEEA = NLOPT_GN_BYTEEA,
     kGA = NLOPT_GN_GA,
+    kMOEA = NLOPT_GN_MOEA,
 };
 
 llvm::cl::OptionCategory
@@ -223,9 +224,19 @@ int main(int argc, const char** argv)
         gosat::FPIRGenerator ir_gen(&context, module.get());
         std::vector<double> init_number;
         auto ll_func_ptr = ir_gen.genFunction(smt_expr, init_number);
-////        [add by yx]
+        llvm::outs()<<"[add by yx]\n";
+        ll_func_ptr->print(llvm::outs());
+        llvm::outs()<<"\n";
+
+
+//        auto ll_func_ptr1 = ir_gen.genFunction(smt_expr, init_number);
 //        llvm::outs()<<"[add by yx]\n";
-//        ll_func_ptr->print(llvm::outs());
+//        ll_func_ptr1->print(llvm::outs());
+//        llvm::outs()<<"\n";
+//
+//        auto ll_func_ptr2 = ir_gen.genFunction(smt_expr, init_number);
+//        llvm::outs()<<"[add by yx]\n";
+//        ll_func_ptr2->print(llvm::outs());
 //        llvm::outs()<<"\n";
 
         std::string err_str;
@@ -247,7 +258,7 @@ int main(int argc, const char** argv)
                 getPointerToFunction(ll_func_ptr));
 
         // Now working with optimization backend
-        goSATAlgorithm current_alg = (opt_go_algorithm == kUndefinedAlg) ? kBYTEEA : opt_go_algorithm;
+        goSATAlgorithm current_alg = (opt_go_algorithm == kUndefinedAlg) ? kMOEA : opt_go_algorithm;
 //        goSATAlgorithm::kBYTEEA;
 //        goSATAlgorithm current_alg = kDirect; kCRS2; kISRES; kMLSL; kESCH; kBYTEEA; kGA;
 
@@ -266,11 +277,23 @@ int main(int argc, const char** argv)
 //            printf("init_number>>%e\n",init_number[i]);
           model_vec[i] = init_number[i];
         }
-//        model_vec[0] = 1.271161006153646e+308;
-//        model_vec[1] = 1.271161006153646e+308;
-//        model_vec[2] = 0;
-//        model_vec[3] = 10;
-//        model_vec[4] = 1;
+        model_vec[0] = 0;
+        model_vec[1] = 0;
+        model_vec[2] = 0.5;
+        model_vec[3] = 0.5;
+        model_vec[4] = 0.5;
+        model_vec[5] = 0;
+        model_vec[6] = 0;
+        model_vec[7] = 0;
+        model_vec[8] = 1;
+        model_vec[9] = 1;
+        model_vec[10] = 0;
+        model_vec[11] = 0.5;
+        model_vec[12] = 0.5;
+        model_vec[13] = 0;
+        model_vec[14] = 0;
+        model_vec[15] = 0;
+
 //        std::vector<double> model_vec(ir_gen.getVarCount(), rand()/double(RAND_MAX));
         if (ir_gen.getVarCount() == 0) {
             // const function
