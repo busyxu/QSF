@@ -224,9 +224,9 @@ int main(int argc, const char** argv)
         gosat::FPIRGenerator ir_gen(&context, module.get());
         std::vector<double> init_number;
         auto ll_func_ptr = ir_gen.genFunction(smt_expr, init_number);
-        llvm::outs()<<"[add by yx]\n";
-        ll_func_ptr->print(llvm::outs());
-        llvm::outs()<<"\n";
+//        llvm::outs()<<"[add by yx]\n";
+//        ll_func_ptr->print(llvm::outs());
+//        llvm::outs()<<"\n";
 
 
 //        auto ll_func_ptr1 = ir_gen.genFunction(smt_expr, init_number);
@@ -277,22 +277,22 @@ int main(int argc, const char** argv)
 //            printf("init_number>>%e\n",init_number[i]);
           model_vec[i] = init_number[i];
         }
-        model_vec[0] = 0;
-        model_vec[1] = 0;
-        model_vec[2] = 0.5;
-        model_vec[3] = 0.5;
-        model_vec[4] = 0.5;
-        model_vec[5] = 0;
-        model_vec[6] = 0;
-        model_vec[7] = 0;
-        model_vec[8] = 1;
-        model_vec[9] = 1;
-        model_vec[10] = 0;
-        model_vec[11] = 0.5;
-        model_vec[12] = 0.5;
-        model_vec[13] = 0;
-        model_vec[14] = 0;
-        model_vec[15] = 0;
+//        model_vec[0] = 0;
+//        model_vec[1] = 0;
+//        model_vec[2] = 0.5;
+//        model_vec[3] = 0.5;
+//        model_vec[4] = 0.5;
+//        model_vec[5] = 0;
+//        model_vec[6] = 0;
+//        model_vec[7] = 0;
+//        model_vec[8] = 0;
+//        model_vec[9] = 0;
+//        model_vec[10] = 0;
+//        model_vec[11] = 0.5;
+//        model_vec[12] = 0.5;
+//        model_vec[13] = 0;
+//        model_vec[14] = 0;
+//        model_vec[15] = 0;
 
 //        std::vector<double> model_vec(ir_gen.getVarCount(), rand()/double(RAND_MAX));
         if (ir_gen.getVarCount() == 0) {

@@ -86,7 +86,7 @@ NLoptOptimizer::optimize
 //    nlopt_set_xtol_rel(opt, Config.RelTolerance);
 //    nlopt_set_maxeval(opt, Config.MaxEvalCount);
     nlopt_set_maxtime(opt, 60000);//60s
-    nlopt_set_population(opt, 200);
+    nlopt_set_population(opt, 20);
 //    nlopt_set_maxtime(opt, 90);//30s
 //    nlopt_set_population(opt, 300);
     nlopt_set_outData(opt, seed, seed_size);//add by yx, where, *grad is init value.What is the effect of the value
