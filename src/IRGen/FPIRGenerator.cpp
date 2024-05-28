@@ -221,6 +221,8 @@ llvm::Function* FPIRGenerator::genFunction
                                        Type::getDoublePtrTy(*m_ctx),
                                        Type::getDoublePtrTy(*m_ctx),
                                        Type::getInt8PtrTy(*m_ctx)));
+
+
 //    llvm::outs()<<"[add by yx] m_gofunc:\n";
 //    m_gofunc->print(llvm::outs());
 //    llvm::outs()<<"\n";
@@ -290,6 +292,8 @@ llvm::Function* FPIRGenerator::genFunction
     Type *BoolTY = Type::getInt1Ty(*m_ctx);
     Type *Int32TY = Type::getInt32Ty(*m_ctx);
 
+    Type *DoublePtrTy = Type::getDoublePtrTy(*m_ctx);
+//    const Type VecTy = Type::getVectorElementType(*m_ctx);
 //  llvm::outs()<<"[add by yx] m_gofunc3:\n";
 //  m_gofunc->print(llvm::outs());
 //  llvm::outs()<<"\n";
@@ -347,6 +351,9 @@ llvm::Function* FPIRGenerator::genFunction
     m_func_ite = cast<Function>(
           m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunIte),
                                      DoubleTY,DoubleTY,DoubleTY,DoubleTY));
+    m_func_distinct = cast<Function>(
+            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunDistinct),
+                                       DoubleTY,DoubleTY,DoubleTY,Int32TY));
     m_func_band = cast<Function>(
           m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunBand),
                                      DoubleTY,DoubleTY,DoubleTY));
@@ -470,6 +477,7 @@ llvm::Function* FPIRGenerator::genFunction
     // add by zgf
     m_func_isinf->setLinkage(Function::ExternalLinkage);
     m_func_ite->setLinkage(Function::ExternalLinkage);
+    m_func_distinct->setLinkage(Function::ExternalLinkage); // add by yx
     m_func_band->setLinkage(Function::ExternalLinkage);
     m_func_bor->setLinkage(Function::ExternalLinkage);
     m_func_bxor->setLinkage(Function::ExternalLinkage);
@@ -572,9 +580,14 @@ const IRSymbol* FPIRGenerator::genFuncRecursive
     }
     if (fpa_util::isRoundingModeApp(expr) &&
         expr.decl().decl_kind() != Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN &&
-        expr.decl().decl_kind() != Z3_OP_FPA_RM_TOWARD_ZERO) {
+        expr.decl().decl_kind() != Z3_OP_FPA_RM_TOWARD_ZERO &&
+        expr.decl().decl_kind() != Z3_OP_FPA_RM_TOWARD_POSITIVE &&
+        expr.decl().decl_kind() != Z3_OP_FPA_RM_TOWARD_NEGATIVE) {
         m_found_unsupported_smt_expr = true;
         assert(false && "unsupport expr !");
+    }
+    if(expr.get_sort().sort_kind()==Z3_ROUNDING_MODE_SORT){
+        return nullptr;
     }
     if (expr.is_numeral()) {
 //        llvm::outs()<<"[add by yx]:\n"<<expr.to_string()<<"\n";
@@ -663,7 +676,7 @@ const IRSymbol* FPIRGenerator::genFuncRecursive
     std::vector<const IRSymbol*> arg_syms;
     arg_syms.reserve(expr.num_args());
     for (uint i = 0; i < expr.num_args(); ++i) {
-//        llvm::outs()<<"expr>>>\n"<<expr.arg(i).to_string()<<"\n";
+        llvm::outs()<<"expr>>>\n"<<expr.arg(i).to_string()<<"\n";
 //        if(expr.arg(i).decl().decl_kind() >= Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN &&
 //            expr.arg(i).decl().decl_kind() <= Z3_OP_FPA_RM_TOWARD_ZERO){p
 //            continue;
@@ -673,7 +686,7 @@ const IRSymbol* FPIRGenerator::genFuncRecursive
     }
     auto res_pair = insertSymbol(kind, expr, nullptr);
     res_pair.first->setValue(genExprIR(builder, res_pair.first, arg_syms, cov, totalCov, init_number));
-//    llvm::outs()<<"IR>>>\n"<<*res_pair.first->getValue()<<"\n";
+    llvm::outs()<<"IR>>>\n"<<*res_pair.first->getValue()<<"\n";
     if (expr.decl().decl_kind() == Z3_OP_FPA_TO_FP) {
       if (expr.num_args() == 1){
         if (fpa_util::isBVVar(expr.arg(0)))
@@ -1106,6 +1119,10 @@ llvm::Value* FPIRGenerator::genExprIR
             return builder.CreateCall(m_func_ite, {arg_syms[0]->getValue(),
                                                    arg_syms[1]->getValue(),
                                                    arg_syms[2]->getValue()});
+        case Z3_OP_DISTINCT: {// add by yx
+            Value* arg_size = ConstantInt::get(builder.getInt32Ty(), arg_syms.size());
+            return builder.CreateCall(m_func_distinct, {arg_syms[0]->getValue(), arg_syms[1]->getValue(), arg_size});
+        }
         case Z3_OP_BAND:
             return builder.CreateCall(m_func_band, {arg_syms[0]->getValue(),
                                                     arg_syms[1]->getValue()});
@@ -1567,6 +1584,7 @@ void FPIRGenerator::addGlobalFunctionMappings(llvm::ExecutionEngine *engine)
     // add by zgf
     double (*func_ptr_isinf)(double, double) = fp64_isinf;
     double (*func_ptr_ite)(double, double, double) = fp64_ite;
+    double (*func_ptr_distinct)(double, double, int) = fp64_distinct;//add by yx
     double (*func_ptr_band)(double, double) = fp64_band;
     double (*func_ptr_bor)(double, double) = fp64_bor;
     double (*func_ptr_bxor)(double, double) = fp64_bxor;
@@ -1617,6 +1635,7 @@ void FPIRGenerator::addGlobalFunctionMappings(llvm::ExecutionEngine *engine)
     // add by zgf
     engine->addGlobalMapping(this->m_func_isinf, (void *)func_ptr_isinf);
     engine->addGlobalMapping(this->m_func_ite, (void *)func_ptr_ite);
+    engine->addGlobalMapping(this->m_func_distinct, (void *)func_ptr_distinct);//add by yx
     engine->addGlobalMapping(this->m_func_band, (void *)func_ptr_band);
     engine->addGlobalMapping(this->m_func_bor, (void *)func_ptr_bor);
     engine->addGlobalMapping(this->m_func_bxor, (void *)func_ptr_bxor);

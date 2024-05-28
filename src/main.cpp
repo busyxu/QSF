@@ -297,7 +297,10 @@ int main(int argc, const char** argv)
 //        std::vector<double> model_vec(ir_gen.getVarCount(), rand()/double(RAND_MAX));
         if (ir_gen.getVarCount() == 0) {
             // const function
-            minima = (func_ptr)(0, nullptr, nullptr, nullptr);
+            double cov=1024;
+            double totalCov = 0;
+//            double func_val = func(dim, x, &cov, &totalCov);
+            minima = (func_ptr)(0, nullptr, &cov, &totalCov);
         } else {
 //          auto start = std::chrono::high_resolution_clock::now();
             double *seed = new double[init_number.size()];
