@@ -676,7 +676,7 @@ const IRSymbol* FPIRGenerator::genFuncRecursive
     std::vector<const IRSymbol*> arg_syms;
     arg_syms.reserve(expr.num_args());
     for (uint i = 0; i < expr.num_args(); ++i) {
-        llvm::outs()<<"expr>>>\n"<<expr.arg(i).to_string()<<"\n";
+//        llvm::outs()<<"expr>>>\n"<<expr.arg(i).to_string()<<"\n";
 //        if(expr.arg(i).decl().decl_kind() >= Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN &&
 //            expr.arg(i).decl().decl_kind() <= Z3_OP_FPA_RM_TOWARD_ZERO){p
 //            continue;
@@ -686,7 +686,7 @@ const IRSymbol* FPIRGenerator::genFuncRecursive
     }
     auto res_pair = insertSymbol(kind, expr, nullptr);
     res_pair.first->setValue(genExprIR(builder, res_pair.first, arg_syms, cov, totalCov, init_number));
-    llvm::outs()<<"IR>>>\n"<<*res_pair.first->getValue()<<"\n";
+//    llvm::outs()<<"IR>>>\n"<<*res_pair.first->getValue()<<"\n";
     if (expr.decl().decl_kind() == Z3_OP_FPA_TO_FP) {
       if (expr.num_args() == 1){
         if (fpa_util::isBVVar(expr.arg(0)))

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.3)
-project(optsat CXX)
+project(qsat CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fno-rtti")
 
@@ -16,16 +16,21 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-# add by zgf
-set(libz3-path /home/aaa/fp-solver/z3-4.6.2/install/lib/libz3.so)
-set(Z3_INCLUDE_DIR /home/aaa/fp-solver/z3-4.6.2/install/include)
+set(libz3-path ${libz3-path} CACHE PATH "Path to libz3.so")
+set(Z3_INCLUDE_DIR ${Z3_INCLUDE_DIR} CACHE PATH "Path to Z3 include directory")
+set(libnlopt-path ${libnlopt-path} CACHE PATH "Path to libnlopt.so")
+set(NLOPT_INCLUDE_DIR ${NLOPT_INCLUDE_DIR} CACHE PATH "Path to NLOPT include directory")
 
-#set(libnlopt-path /home/aaa/nlopt2/build/libnlopt2.so)
-set(libnlopt-path /home/aaa/nlopt2/build-debug/libnlopt2.so)
-set(NLOPT_INCLUDE_DIR /home/aaa/nlopt2/install/include)
-
-set(LLVM_DIR /home/aaa/fp-solver/llvm-6/install/lib/cmake/llvm)
-#set(LLVM_DIR /home/aaa/llvm-6/install/lib/cmake/llvm)
+## add by zgf
+#set(libz3-path /home/aaa/fp-solver/z3-4.6.2/install/lib/libz3.so)
+#set(Z3_INCLUDE_DIR /home/aaa/fp-solver/z3-4.6.2/install/include)
+#
+##set(libnlopt-path /home/aaa/nlopt2/build/libnlopt2.so)
+#set(libnlopt-path /home/aaa/nlopt2/build-debug/libnlopt2.so)
+#set(NLOPT_INCLUDE_DIR /home/aaa/nlopt2/install/include)
+#
+#set(LLVM_DIR /home/aaa/fp-solver/llvm-6/install/lib/cmake/llvm)
+##set(LLVM_DIR /home/aaa/llvm-6/install/lib/cmake/llvm)
 
 # Finds and configures LLVM build directories
 find_package(LLVM REQUIRED CONFIG)
@@ -84,11 +89,11 @@ set(SOURCE_FILES
     src/CodeGen/CodeGen.cpp
     src/Optimizer/ModelValidator.cpp)
 add_subdirectory(tools/nl_solver)
-add_executable(optsat ${SOURCE_FILES})
-target_link_libraries(optsat libz3 libnlopt ${llvm_libs_required} gmp gmpxx)
+add_executable(qsat ${SOURCE_FILES})
+target_link_libraries(qsat libz3 libnlopt ${llvm_libs_required} gmp gmpxx)
 
 # add by zgf
-add_library(OPTSAT SHARED
+add_library(QSAT SHARED
         src/Utils/FPAUtils.cpp
         src/ExprAnalyzer/FPExprAnalyzer.cpp
         src/IRGen/FPIRGenerator.cpp
@@ -98,6 +103,6 @@ add_library(OPTSAT SHARED
         src/CodeGen/CodeGen.cpp
         src/Optimizer/ModelValidator.cpp
 )
-target_include_directories(OPTSAT PRIVATE ${CMAKE_SOURCE_DIR}/include) #指定目标包含的头文件路径
-target_link_libraries(OPTSAT libz3 libnlopt ${llvm_libs_required} gmp gmpxx) #指定目标链接的库
+target_include_directories(QSAT PRIVATE ${CMAKE_SOURCE_DIR}/include) #指定目标包含的头文件路径
+target_link_libraries(QSAT libz3 libnlopt ${llvm_libs_required} gmp gmpxx) #指定目标链接的库
 
