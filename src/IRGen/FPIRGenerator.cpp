@@ -940,7 +940,6 @@ llvm::Value* FPIRGenerator::genExprIR
         case Z3_OP_LE:
         case Z3_OP_FPA_LE:
             if (expr_sym->isNegated()) {
-
                 auto comp_res = builder.CreateFCmpOGT(arg_syms[0]->getValue(),
                                                       arg_syms[1]->getValue());
                 return genBinArgCmpIR2(builder, arg_syms, comp_res);
@@ -1264,8 +1263,8 @@ llvm::Value* FPIRGenerator::genExprIR
               return genFPCheckIR(builder, arg_syms, call_res, opcode ,mode);
             }
           }
-
         }
+
         default:
             std::cerr << "unsupported: " +
                          expr_sym->expr()->decl().name().str() + "\n";
@@ -1291,7 +1290,6 @@ llvm::Value* FPIRGenerator::genBinArgCmpIR
                                                     arg_syms[1]->getValue()});
     call_res->setTailCall(false);
     builder.CreateBr(bb_second);
-
     builder.SetInsertPoint(bb_second);
     auto phi_inst = builder.CreatePHI(builder.getDoubleTy(), 2);
     phi_inst->addIncoming(call_res, bb_first);//要么是这个距离 call_res
