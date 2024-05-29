@@ -40,7 +40,7 @@ In the case of `sat` result, it is possible to intruct `QSat` to externally vali
 generated model using `z3`. This can be done by providing parameter `-c`. For example,
 
 ```bash
-./gosat -c -f formula.smt2
+./qsat -c -f formula.smt2
 ```
 
 So far, we have not encountered any unsound result. Please report to us if you 
