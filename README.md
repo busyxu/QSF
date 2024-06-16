@@ -7,7 +7,7 @@ This project depends on:
 
 - [Z3] library for input file parsing and model validation, i.e., Z3 v3.6.2.
 - [LLVM] for JIT execution of SMT formulas, i.e., LLVM v6.0.0.
-- [NLopt2] for solving multi-objective optimization problems, NLopt2 is developed based on NLopt v3.2.
+- [NLopt2] for solving multi-objective optimization problems, NLopt2 is developed based on NLopt.
 
 ## Building 
 
