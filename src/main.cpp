@@ -42,10 +42,17 @@ enum goSATAlgorithm {
     kBYTEEA = NLOPT_GN_BYTEEA,
     kGA = NLOPT_GN_GA,
     kMOEA = NLOPT_GN_MOEA,
+    kSOEA = NLOPT_GN_SOEA,
+    kNSGA2 = NLOPT_GN_NSGA2
 };
 
 llvm::cl::OptionCategory
         SolverCategory("Solver Options", "Options for controlling FPA solver.");
+
+static llvm::cl::opt<bool> smart_seed(
+        "smart_seed", llvm::cl::Optional,
+        llvm::cl::desc("Initialization preprocessing (default true)"),
+        llvm::cl::init(true));
 
 static llvm::cl::opt<std::string>
         opt_input_file(llvm::cl::Required,
@@ -59,6 +66,14 @@ static llvm::cl::opt<bool>
                        "c",
                        llvm::cl::desc(
                                "validates sat model using z3 if applicable"),
+                       llvm::cl::value_desc("filename"),
+                       llvm::cl::cat(SolverCategory));
+
+static llvm::cl::opt<bool>
+        int_type(llvm::cl::Optional,
+                       "intType",
+                       llvm::cl::desc(
+                               "int type module"),
                        llvm::cl::value_desc("filename"),
                        llvm::cl::cat(SolverCategory));
 
@@ -103,7 +118,16 @@ static llvm::cl::opt<goSATAlgorithm>
                                                      "ISRES algorithm"),
                                           clEnumValN(kMLSL,
                                                      "mlsl",
-                                                     "MLSL algorithm")));
+                                                     "MLSL algorithm"),
+                                          clEnumValN(kMOEA,
+                                                     "moea",
+                                                     "MOEA algorithm"),
+                                          clEnumValN(kSOEA,
+                                                     "soea",
+                                                     "SOEA algorithm"),
+                                          clEnumValN(kNSGA2,
+                                                     "nsga2",
+                                                     "NSGA2 algorithm")));
 
 static llvm::cl::opt<bool> smtlib_compliant_output(
     "smtlib-output", llvm::cl::cat(SolverCategory),
@@ -223,10 +247,16 @@ int main(int argc, const char** argv)
         //浮点ir生成器
         gosat::FPIRGenerator ir_gen(&context, module.get());
         std::vector<double> init_number;
+        std::vector<int> init_number_int;
         auto ll_func_ptr = ir_gen.genFunction(smt_expr, init_number);
-//        llvm::outs()<<"[add by yx]\n";
-//        ll_func_ptr->print(llvm::outs());
-//        llvm::outs()<<"\n";
+//        auto ll_func_ptr = nullptr;
+//        if(!int_type)
+//            auto ll_func_ptr = ir_gen.genFunction(smt_expr, init_number);
+//        else
+//            auto ll_func_ptr = ir_gen.genFunction_int(smt_expr, init_number_int);
+        llvm::outs()<<"[add by yx]\n";
+        ll_func_ptr->print(llvm::outs());
+        llvm::outs()<<"\n";
 
 
 //        auto ll_func_ptr1 = ir_gen.genFunction(smt_expr, init_number);
@@ -269,30 +299,6 @@ int main(int argc, const char** argv)
 
         int status = 0;
         double minima = 1024; /* minimum getValue */
-        double grad = 1024;// distance; unsat
-//        double minima[2]={0.0, MAXFLOAT}; /* minimum getValue */   // maximization problem
-//        std::vector<double> model_vec(ir_gen.getVarCount(), -1.2942268158338517e+36);
-        std::vector<double> model_vec(ir_gen.getVarCount(), 0);
-        for(int i=0; i<init_number.size()&&i<model_vec.size(); i++){
-//            printf("init_number>>%e\n",init_number[i]);
-          model_vec[i] = init_number[i];
-        }
-//        model_vec[0] = 0;
-//        model_vec[1] = 0;
-//        model_vec[2] = 0.5;
-//        model_vec[3] = 0.5;
-//        model_vec[4] = 0.5;
-//        model_vec[5] = 0;
-//        model_vec[6] = 0;
-//        model_vec[7] = 0;
-//        model_vec[8] = 0;
-//        model_vec[9] = 0;
-//        model_vec[10] = 0;
-//        model_vec[11] = 0.5;
-//        model_vec[12] = 0.5;
-//        model_vec[13] = 0;
-//        model_vec[14] = 0;
-//        model_vec[15] = 0;
 
 //        std::vector<double> model_vec(ir_gen.getVarCount(), rand()/double(RAND_MAX));
         if (ir_gen.getVarCount() == 0) {
@@ -302,17 +308,37 @@ int main(int argc, const char** argv)
 //            double func_val = func(dim, x, &cov, &totalCov);
             minima = (func_ptr)(0, nullptr, &cov, &totalCov);
         } else {
-//          auto start = std::chrono::high_resolution_clock::now();
-            double *seed = new double[init_number.size()];
-            for(int i=0; i<init_number.size(); i++){
-              seed[i] = init_number[i];
+            std::vector<double> model_vec(ir_gen.getVarCount(), 0);
+            if(smart_seed){
+                for(int i=0; i<init_number.size()&&i<model_vec.size(); i++){
+//                  printf("init_number>>%e\n",init_number[i]);
+                    model_vec[i] = init_number[i];
+                }
+
+                model_vec[0]=638.4954223632812;
+                model_vec[1]=638.4935913085938;
+                model_vec[2]=638.4935913085938;
+//                model_vec[1]=638.4954223632812;
+
+                double *seed = new double[init_number.size()];
+                for(int i=0; i<init_number.size(); i++){
+                    seed[i] = init_number[i];
+                }
+                status = nl_opt.optimize(func_ptr,
+                                         static_cast<unsigned>(model_vec.size()),
+                                         model_vec.data(), // size = n_var; found all init + with 0 fill
+                                         seed,
+                                         init_number.size(),
+                                         &minima);
             }
-            status = nl_opt.optimize(func_ptr,
-                                     static_cast<unsigned>(model_vec.size()),
-                                     model_vec.data(), // size = n_var; found all init + with 0 fill
-                                     seed, //
-                                     init_number.size(),
-                                     &minima);
+            else{
+                status = nl_opt.optimize(func_ptr,
+                                         static_cast<unsigned>(model_vec.size()),
+                                         model_vec.data(), // size = n_var; found all init + with 0 fill
+                                         NULL,
+                                         0,
+                                         &minima);
+            }
 //          auto end = std::chrono::high_resolution_clock::now();
 //          std::chrono::duration<double> duration = end - start;
 //          double milliseconds = duration.count() * 1000.0;
@@ -378,24 +404,24 @@ int main(int argc, const char** argv)
                 std::cout << std::setprecision(dbl::digits10) << minima << ","
                           << status;
             }
-            if ((minima == 0 || status==2) && validate_model) {
-                gosat::ModelValidator validator(&ir_gen);
-                if (validator.isValid(smt_expr, model_vec)) {
-                    std::cout << ",valid";
-                } else {
-                    std::cout << ",invalid";
-                }
-            }
+//            if ((minima == 0 || status==2) && validate_model) {
+//                gosat::ModelValidator validator(&ir_gen);
+//                if (validator.isValid(smt_expr, model_vec)) {
+//                    std::cout << ",valid";
+//                } else {
+//                    std::cout << ",invalid";
+//                }
+//            }
 
-            if ((minima == 0 || status==2) && validate_model) {
-                for (auto var : ir_gen.getVars()){
-                  std::cout<<"\nVarname : "<<var->expr()->to_string();
-                }
-                for (auto val : model_vec){
-                  std::cout<<"\nResult : "<<val<<"  ";
-//                  printf("%lf\n",val);
-                }
-            }
+//            if ((minima == 0 || status==2) && validate_model) {
+//                for (auto var : ir_gen.getVars()){
+//                  std::cout<<"\nVarname : "<<var->expr()->to_string();
+//                }
+//                for (auto val : model_vec){
+//                  std::cout<<"\nResult : "<<val<<"  ";
+////                  printf("%lf\n",val);
+//                }
+//            }
             std::cout << std::endl;
         }
     } catch (const z3::exception &exp) {

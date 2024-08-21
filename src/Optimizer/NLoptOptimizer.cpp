@@ -146,6 +146,8 @@ NLoptOptimizer::isSupportedGlobalOptAlg(nlopt_algorithm opt_alg) noexcept
         case NLOPT_GN_BYTEEA://add by yx
         case NLOPT_GN_GA://add by yx
         case NLOPT_GN_MOEA://add by yx
+        case NLOPT_GN_SOEA: //add by yx
+        case NLOPT_GN_NSGA2: //add by yx
             return true;
         default:
             return false;
@@ -163,6 +165,8 @@ NLoptOptimizer::isRequirePopulation(nlopt_algorithm opt_alg) noexcept
         case NLOPT_GN_BYTEEA:
         case NLOPT_GN_GA://add by yx
         case NLOPT_GN_MOEA://add by yx
+        case NLOPT_GN_SOEA://add by yx
+        case NLOPT_GN_NSGA2://add by yx
             return true;
         default:
             return false;

@@ -73,6 +73,8 @@ public:
 
     llvm::Function* genFunction(const z3::expr& expr, std::vector<double>& init_number) noexcept;
 
+    llvm::Function* genFunction_int(const z3::expr& expr, std::vector<int>& init_number) noexcept;
+
     llvm::Function* getDistanceFunction() const noexcept;
 
     unsigned getVarCount() const noexcept;

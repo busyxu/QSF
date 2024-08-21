@@ -114,89 +114,89 @@ const IRSymbol* FPIRGenerator::genNumeralIR
       }
     }
 
-//    // add by yx support real const
-//    if (expr.get_sort().sort_kind() == Z3_REAL_SORT) {
+    // add by yx support real const
+    if (expr.get_sort().sort_kind() == Z3_REAL_SORT) {
+        auto result_iter = findSymbol(SymbolKind::kFP64Const, &expr);
+        if (result_iter != m_expr_sym_map.cend())
+            return &(*result_iter).second;
+
+        std::string numeral_str = Z3_ast_to_string(expr.ctx(),static_cast<z3::ast>(expr));
+        double numeral = std::stod(numeral_str);
+        init_number.push_back(numeral);
+//        printf("numeral: str>%s; double>%lf\n",numeral_str.c_str(), numeral);
+
+        Value* value = ConstantFP::get(builder.getDoubleTy(),numeral);
+        auto res_pair = insertSymbol(SymbolKind::kFP64Const, expr, value, 0);
+        return res_pair.first;
+    }
+
+//    if (expr.decl().decl_kind() == Z3_OP_BNUM) {
 //        auto result_iter = findSymbol(SymbolKind::kFP64Const, &expr);
-//        if (result_iter != m_expr_sym_map.cend())
+//        if (result_iter != m_expr_sym_map.cend()) {
 //            return &(*result_iter).second;
-//
-//        std::string numeral_str = Z3_ast_to_string(expr.ctx(),static_cast<z3::ast>(expr));
+//        }
+//        std::string numeral_str = Z3_ast_to_string(expr.ctx(),
+//                                                   static_cast<z3::ast>(expr));
+//        numeral_str.replace(0, 1, 1, '0');
 //        double numeral = std::stod(numeral_str);
 //        init_number.push_back(numeral);
-////        printf("numeral: str>%s; double>%lf\n",numeral_str.c_str(), numeral);
-//
-//        Value* value = ConstantFP::get(builder.getDoubleTy(),numeral);
+//        Value* value = ConstantFP::get(builder.getDoubleTy(), numeral);
 //        auto res_pair = insertSymbol(SymbolKind::kFP64Const, expr, value, 0);
 //        return res_pair.first;
 //    }
 
-    if (expr.decl().decl_kind() == Z3_OP_BNUM) {
-        auto result_iter = findSymbol(SymbolKind::kFP64Const, &expr);
-        if (result_iter != m_expr_sym_map.cend()) {
-            return &(*result_iter).second;
-        }
-        std::string numeral_str = Z3_ast_to_string(expr.ctx(),
-                                                   static_cast<z3::ast>(expr));
-        numeral_str.replace(0, 1, 1, '0');
-        double numeral = std::stod(numeral_str);
-        init_number.push_back(numeral);
-        Value* value = ConstantFP::get(builder.getDoubleTy(), numeral);
-        auto res_pair = insertSymbol(SymbolKind::kFP64Const, expr, value, 0);
-        return res_pair.first;
-    }
-
     //add by yx support real expr
-    if (expr.decl().decl_kind() == Z3_OP_ANUM) {
-        auto result_iter = findSymbol(SymbolKind::kFP64Const, &expr);
-        if (result_iter != m_expr_sym_map.cend()) {
-            return &(*result_iter).second;
-        }
-        std::string numeral_str = Z3_ast_to_string(expr.ctx(),
-                                                   static_cast<z3::ast>(expr));
-//        numeral_str.replace(0, 1, 1, '0');
-        numeral_str = numeral_str.substr(1, numeral_str.size() - 2);
-        std::vector<std::string> tokens;
-        std::istringstream stream(numeral_str);
-        std::string token;
-        char delimiter = ' ';
-        while (std::getline(stream, token, delimiter)) {
-            tokens.push_back(token);
-        }
-        char* op = const_cast<char *>(tokens[0].c_str());
-        double resDouble = 0;
-        switch (*op) {
-            case '+':{
-                double op1 = std::stod(tokens[1]);
-                double op2 = std::stod(tokens[2]);
-                resDouble = op1 + op2;
-                break;
-            }
-            case '-':{
-                double op1 = std::stod(tokens[1]);
-                double op2 = std::stod(tokens[2]);
-                resDouble = op1 - op2;
-                break;
-            }
-            case '*':{
-                double op1 = std::stod(tokens[1]);
-                double op2 = std::stod(tokens[2]);
-                resDouble = op1 * op2;
-                break;
-            }
-            case '/':{
-                double op1 = std::stod(tokens[1]);
-                double op2 = std::stod(tokens[2]);
-                resDouble = op1 / op2;
-                break;
-            }
-            default:
-                assert(false && "unsupported op");
-        }
-        init_number.push_back(resDouble);//add by yx
-        Value* value = ConstantFP::get(builder.getDoubleTy(), resDouble);
-        auto res_pair = insertSymbol(SymbolKind::kFP64Const, expr, value, 0);
-        return res_pair.first;
-    }
+//    if (expr.decl().decl_kind() == Z3_OP_ANUM) {
+//        auto result_iter = findSymbol(SymbolKind::kFP64Const, &expr);
+//        if (result_iter != m_expr_sym_map.cend()) {
+//            return &(*result_iter).second;
+//        }
+//        std::string numeral_str = Z3_ast_to_string(expr.ctx(),
+//                                                   static_cast<z3::ast>(expr));
+////        numeral_str.replace(0, 1, 1, '0');
+//        numeral_str = numeral_str.substr(1, numeral_str.size() - 2);
+//        std::vector<std::string> tokens;
+//        std::istringstream stream(numeral_str);
+//        std::string token;
+//        char delimiter = ' ';
+//        while (std::getline(stream, token, delimiter)) {
+//            tokens.push_back(token);
+//        }
+//        char* op = const_cast<char *>(tokens[0].c_str());
+//        double resDouble = 0;
+//        switch (*op) {
+//            case '+':{
+//                double op1 = std::stod(tokens[1]);
+//                double op2 = std::stod(tokens[2]);
+//                resDouble = op1 + op2;
+//                break;
+//            }
+//            case '-':{
+//                double op1 = std::stod(tokens[1]);
+//                double op2 = std::stod(tokens[2]);
+//                resDouble = op1 - op2;
+//                break;
+//            }
+//            case '*':{
+//                double op1 = std::stod(tokens[1]);
+//                double op2 = std::stod(tokens[2]);
+//                resDouble = op1 * op2;
+//                break;
+//            }
+//            case '/':{
+//                double op1 = std::stod(tokens[1]);
+//                double op2 = std::stod(tokens[2]);
+//                resDouble = op1 / op2;
+//                break;
+//            }
+//            default:
+//                assert(false && "unsupported op");
+//        }
+//        init_number.push_back(resDouble);//add by yx
+//        Value* value = ConstantFP::get(builder.getDoubleTy(), resDouble);
+//        auto res_pair = insertSymbol(SymbolKind::kFP64Const, expr, value, 0);
+//        return res_pair.first;
+//    }
 
     return nullptr;
 }
@@ -216,11 +216,12 @@ llvm::Function* FPIRGenerator::genFunction
     m_gofunc = cast<Function>(
             m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunName),
                                        Type::getDoubleTy(*m_ctx),
+//                                        Type::getInt8PtrTy(*m_ctx),
 //                                       StructType::create({Type::getDoubleTy(*m_ctx),Type::getDoubleTy(*m_ctx)})->getPointerTo(),
                                        Type::getInt32Ty(*m_ctx),
                                        Type::getDoublePtrTy(*m_ctx),
                                        Type::getDoublePtrTy(*m_ctx),
-                                       Type::getInt8PtrTy(*m_ctx)));
+                                       Type::getDoublePtrTy(*m_ctx)));
 
 
 //    llvm::outs()<<"[add by yx] m_gofunc:\n";
@@ -568,6 +569,370 @@ llvm::Function* FPIRGenerator::genFunction
     return m_gofunc;
 }
 
+//llvm::Function* FPIRGenerator::genFunction_int
+//        (const z3::expr& expr, std::vector<int>& init_number)  noexcept
+//{
+//    using namespace llvm;
+//    if (m_gofunc != nullptr) {
+//        return m_gofunc;
+//    }
+//    m_gofunc = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunName),
+//                                       Type::getDoubleTy(*m_ctx),
+////                                        Type::getInt8PtrTy(*m_ctx),
+////                                       StructType::create({Type::getDoubleTy(*m_ctx),Type::getDoubleTy(*m_ctx)})->getPointerTo(),
+//                                       Type::getInt32Ty(*m_ctx),
+//                                       Type::getInt64PtrTy(*m_ctx),
+//                                       Type::getDoublePtrTy(*m_ctx),
+//                                       Type::getDoublePtrTy(*m_ctx)));
+//
+//
+////    llvm::outs()<<"[add by yx] m_gofunc:\n";
+////    m_gofunc->print(llvm::outs());
+////    llvm::outs()<<"\n";
+//    //declare double @gofunc(i32, double*, double*, i8*)
+//
+//    Function::arg_iterator cur_arg = m_gofunc->arg_begin();
+//
+////    llvm::outs()<<"[add by yx] cur_arg:\n";
+////    cur_arg->print(llvm::outs());
+////    llvm::outs()<<"\n";
+//
+////  [add by yx] cur_arg:
+////  i32 %0
+////  double* %0
+////  double* %0
+//
+//    //给每个参数设置相应的属性
+//    (*cur_arg).setName("n");
+//    cur_arg++;
+//    (*cur_arg).setName("x");
+//    (*cur_arg).addAttr(Attribute::NoCapture);
+//    (*cur_arg).addAttr(Attribute::ReadOnly);
+//    cur_arg++;
+//    (*cur_arg).setName("grad");
+//    (*cur_arg).addAttr(Attribute::NoCapture);
+//    (*cur_arg).addAttr(Attribute::ReadNone);
+//    cur_arg++;
+//    (*cur_arg).setName("data");
+//    (*cur_arg).addAttr(Attribute::NoCapture);
+//    (*cur_arg).addAttr(Attribute::ReadNone);
+////    cur_arg++;
+////    (*cur_arg).setName("cov");
+////    cur_arg++;
+////    (*cur_arg).setName("dis");
+////    cur_arg++;
+////    (*cur_arg).setName("func");
+//
+////  llvm::outs()<<"[add by yx] m_gofunc2:\n";
+////  m_gofunc->print(llvm::outs());
+////  llvm::outs()<<"\n";
+////  [add by yx] m_gofunc2:
+////
+////  declare double @gofunc(i32, double* nocapture readonly, double* nocapture readnone, i8* nocapture readnone)
+//
+//    BasicBlock* BB = BasicBlock::Create(*m_ctx, "EntryBlock", m_gofunc);
+//    IRBuilder<> builder(BB);
+//
+////    // add by yx
+////    BasicBlock* trueBB = BasicBlock::Create(*m_ctx, "trueBlock", m_gofunc);
+////    IRBuilder<> builder_true(trueBB);
+//
+//    // TBAA Metadata
+//    MDBuilder md_builder(*m_ctx);
+//    auto md_scalar = md_builder.createConstant(builder.getInt64(0));
+//    auto md_node_1 = MDNode::get(*m_ctx,
+//                                 MDString::get(*m_ctx, "Simple C/C++ TBAA"));
+//    auto md_node_2 = MDNode::get(*m_ctx,
+//                                 {MDString::get(*m_ctx, "omnipotent char"),
+//                                  md_node_1, md_scalar});
+//    auto md_node_3 = MDNode::get(*m_ctx,
+//                                 {MDString::get(*m_ctx, "double"), md_node_2,
+//                                  md_scalar});
+//    m_tbaa_node = MDNode::get(*m_ctx, {md_node_3, md_node_3, md_scalar});
+//
+//    // Initialize external functions to be linked to JIT
+//    Type *DoubleTY = Type::getDoubleTy(*m_ctx);
+//    Type *BoolTY = Type::getInt1Ty(*m_ctx);
+//    Type *Int32TY = Type::getInt32Ty(*m_ctx);
+//    Type *Int64TY = Type::getInt64Ty(*m_ctx);
+//
+//    Type *DoublePtrTy = Type::getDoublePtrTy(*m_ctx);
+////    const Type VecTy = Type::getVectorElementType(*m_ctx);
+////  llvm::outs()<<"[add by yx] m_gofunc3:\n";
+////  m_gofunc->print(llvm::outs());
+////  llvm::outs()<<"\n";
+//    //  [add by yx] m_gofunc3:
+////
+////  define double @gofunc(i32 %n, double* nocapture readonly %x, double* nocapture readnone %grad, i8* nocapture readnone %data) {
+////    EntryBlock:
+////  }
+//
+//    m_func_fp64_dis = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunDis),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//
+//    m_func_fp64_gt_dis = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunGtDis),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//
+//    m_func_fp64_lt_dis = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunLtDis),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//
+//    m_func_fp64_le_dis = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunLeDis),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//
+//    m_func_fp64_ge_dis = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunGeDis),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//
+//    m_func_fp64_overflow_dis = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunOverflowDis),
+//                                       DoubleTY,DoubleTY,DoubleTY,DoubleTY,DoubleTY));
+////    llvm::outs()<<"[add by yx]\n";
+////    m_func_fp64_dis->print(llvm::outs());
+////    llvm::outs()<<"\n";
+//
+//    m_func_fp64_eq_dis = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunEqDis),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//
+////    llvm::outs()<<"[add by yx]\n";
+////    m_func_fp64_eq_dis->print(llvm::outs());
+////    llvm::outs()<<"\n";
+//
+//    m_func_fp64_neq_dis = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunNEqDis),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//    m_func_isnan = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunIsNan),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//    // add by zgf
+//    m_func_isinf = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunIsInf),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//    m_func_ite = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunIte),
+//                                       DoubleTY,DoubleTY,DoubleTY,DoubleTY));
+//    m_func_distinct = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunDistinct),
+//                                       DoubleTY,DoubleTY,DoubleTY,Int32TY));
+//    m_func_band = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunBand),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//    m_func_bor = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunBor),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//    m_func_bxor = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunBxor),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//
+//    // add by zgf : one arg
+//    m_func_tan = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunTan),
+//                                       DoubleTY,DoubleTY));
+//    m_func_asin = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunASin),
+//                                       DoubleTY,DoubleTY));
+//    m_func_acos = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunACos),
+//                                       DoubleTY,DoubleTY));
+//    m_func_atan = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunATan),
+//                                       DoubleTY,DoubleTY));
+//    m_func_sinh = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunSinh),
+//                                       DoubleTY,DoubleTY));
+//    m_func_cosh = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunCosh),
+//                                       DoubleTY,DoubleTY));
+//    m_func_tanh = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunTanh),
+//                                       DoubleTY,DoubleTY));
+//    // add by zgf : two arg
+//    m_func_pow = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunPow),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//    m_func_atan2 = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunATan2),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//    m_func_fmin = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFMin),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//    m_func_fmax = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFMax),
+//                                       DoubleTY,DoubleTY,DoubleTY));
+//
+//    m_func_fpcheck_dis = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFPDis),
+//                                       DoubleTY,DoubleTY,DoubleTY,Int32TY,Int32TY));
+//    m_func_fpcheck_fadd_overflow = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFAddOverflow),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fsub_overflow = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFSubOverflow),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fmul_overflow = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFMulOverflow),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fdiv_overflow = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFDivOverflow),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fadd_underflow = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFAddUnderflow),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fsub_underflow = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFSubUnderflow),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fmul_underflow = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFMulUnderflow),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fdiv_underflow = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFDivUnderflow),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fdiv_invalid = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFDivInvalid),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fdiv_zero = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFDivZero),
+//                                       BoolTY,DoubleTY,DoubleTY));
+////    add by yx
+//    m_func_fpcheck_finvalid_sqrt = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFInvalidSqrt),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_finvalid_log = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFInvalidLog),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_finvalid_pow = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFInvalidPow),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fadd_accuracy = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFAddAccuracy),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fsub_accuracy = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFSubAccuracy),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fmul_accuracy = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFMulAccuracy),
+//                                       BoolTY,DoubleTY,DoubleTY));
+//    m_func_fpcheck_fdiv_accuracy = cast<Function>(
+//            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunFDivAccuracy),
+//                                       BoolTY,DoubleTY,DoubleTY));
+////  llvm::outs()<<"[add by yx] m_gofunc4:\n";
+////  m_gofunc->print(llvm::outs());
+////  llvm::outs()<<"\n";
+////  [add by yx] m_gofunc4:
+////
+////  define double @gofunc(i32 %n, double* nocapture readonly %x, double* nocapture readnone %grad, i8* nocapture readnone %data) {
+////    EntryBlock:
+////  }
+//
+//    m_func_fp64_dis->setLinkage(Function::ExternalLinkage);
+////    [add by yx]
+//    m_func_fp64_gt_dis->setLinkage(Function::ExternalLinkage);
+//    m_func_fp64_lt_dis->setLinkage(Function::ExternalLinkage);
+//    m_func_fp64_ge_dis->setLinkage(Function::ExternalLinkage);
+//    m_func_fp64_le_dis->setLinkage(Function::ExternalLinkage);
+//    m_func_fp64_overflow_dis->setLinkage(Function::ExternalLinkage);
+//    m_func_fp64_eq_dis->setLinkage(Function::ExternalLinkage);
+//    m_func_fp64_neq_dis->setLinkage(Function::ExternalLinkage);
+//    m_func_isnan->setLinkage(Function::ExternalLinkage);
+//    // add by zgf
+//    m_func_isinf->setLinkage(Function::ExternalLinkage);
+//    m_func_ite->setLinkage(Function::ExternalLinkage);
+//    m_func_distinct->setLinkage(Function::ExternalLinkage); // add by yx
+//    m_func_band->setLinkage(Function::ExternalLinkage);
+//    m_func_bor->setLinkage(Function::ExternalLinkage);
+//    m_func_bxor->setLinkage(Function::ExternalLinkage);
+//    m_func_tan->setLinkage(Function::ExternalLinkage);
+//    m_func_asin->setLinkage(Function::ExternalLinkage);
+//    m_func_acos->setLinkage(Function::ExternalLinkage);
+//    m_func_atan->setLinkage(Function::ExternalLinkage);
+//    m_func_sinh->setLinkage(Function::ExternalLinkage);
+//    m_func_cosh->setLinkage(Function::ExternalLinkage);
+//    m_func_tanh->setLinkage(Function::ExternalLinkage);
+//    m_func_pow->setLinkage(Function::ExternalLinkage);
+//    m_func_atan2->setLinkage(Function::ExternalLinkage);
+//    m_func_fmin->setLinkage(Function::ExternalLinkage);
+//    m_func_fmax->setLinkage(Function::ExternalLinkage);
+//
+//    m_func_fpcheck_dis->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fadd_overflow->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fsub_overflow->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fmul_overflow->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fdiv_overflow->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fadd_underflow->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fsub_underflow->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fmul_underflow->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fdiv_underflow->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fdiv_invalid->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fdiv_zero->setLinkage(Function::ExternalLinkage);
+////add by yx
+//    m_func_fpcheck_finvalid_sqrt->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_finvalid_log->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_finvalid_pow->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fadd_accuracy->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fsub_accuracy->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fmul_accuracy->setLinkage(Function::ExternalLinkage);
+//    m_func_fpcheck_fdiv_accuracy->setLinkage(Function::ExternalLinkage);
+//
+////  llvm::outs()<<"[add by yx] m_gofunc5:\n";
+////  m_gofunc->print(llvm::outs());
+////  llvm::outs()<<"\n";
+////
+////  [add by yx] m_gofunc5:
+////
+////  define double @gofunc(i32 %n, double* nocapture readonly %x, double* nocapture readnone %grad, i8* nocapture readnone %data) {
+////    EntryBlock:
+////  }
+//    m_const_zero = ConstantFP::get(builder.getDoubleTy(), 0.0);
+//    m_const_one = ConstantFP::get(builder.getDoubleTy(), 1.0);
+////    m_const_min_double = ConstantFP::get(builder.getDoubleTy(), 1.0/__FP_LONG_MAX);
+////    m_const_max_double = ConstantFP::get(builder.getDoubleTy(), MAXFLOAT);
+//
+////    //add by yx writing trueBlock
+////    Argument* cov_arg = &(*(m_gofunc->arg_begin()+2));
+//    llvm::Value* cov = builder.CreateAlloca(Type::getDoubleTy(*m_ctx), nullptr, "cov");
+//    llvm::Value* totalCov = builder.CreateAlloca(Type::getDoubleTy(*m_ctx), nullptr, "totalCov");
+//    builder.CreateStore(m_const_zero, cov);
+//    builder.CreateStore(m_const_zero, totalCov);
+////    builder.CreateAlloca()
+//
+////    llvm::outs()<<"[add by yx] m_gofunc2:\n";
+////    m_gofunc->print(llvm::outs());
+////    llvm::outs()<<"\n";
+//
+//    //这条语句写了entryblock
+//
+//    auto return_val_sym = genFuncRecursive(builder, expr, false, cov, totalCov, init_number);
+////      llvm::outs()<<"[add by yx] m_gofunc7:\n";
+////      m_gofunc->print(llvm::outs());
+////      llvm::outs()<<"\n";
+////      llvm::outs()<<*return_val_sym->getValue()<<"\n";
+////    builder.CreateRet(return_val_sym->getValue());
+//
+//    // add by yx
+//    Argument* grad_arg = &(*(m_gofunc->arg_begin()+2));
+//    Argument* data_arg = &(*(m_gofunc->arg_begin()+3));
+//    llvm::Value* loadCov = builder.CreateLoad(cov);
+//    llvm::Value* loadTotalCov = builder.CreateLoad(totalCov);
+//
+////    llvm::Value* covObj = builder.CreateFSub(loadTotalCov, loadCov); //totalCov - cov
+////    llvm::Value* funcV = builder.CreateFAdd(covObj, return_val_sym->getValue()); totalCov - cov + distance
+//
+//    builder.CreateStore(loadCov,grad_arg); //cov
+//    builder.CreateStore(loadTotalCov, data_arg); //totalcov
+//    builder.CreateRet(return_val_sym->getValue());
+//
+////    llvm::outs()<<"[add by yx] m_gofunc8:\n";
+////    m_gofunc->print(llvm::outs());
+////    llvm::outs()<<"\n";
+//
+//    return m_gofunc;
+//}
+
 const IRSymbol* FPIRGenerator::genFuncRecursive
         (llvm::IRBuilder<>& builder, const z3::expr expr,
          bool is_negated, llvm::Value* cov, llvm::Value* totalCov, std::vector<double>& init_number) noexcept
@@ -657,6 +1022,7 @@ const IRSymbol* FPIRGenerator::genFuncRecursive
 //    if (fpa_util::isBoolExpr(expr) || expr.decl().decl_kind() == Z3_OP_NOT) {
 //        is_negated = !is_negated;
 //    }
+
     if (expr.decl().decl_kind() == Z3_OP_NOT) {
         is_negated = !is_negated;
     }
@@ -676,7 +1042,7 @@ const IRSymbol* FPIRGenerator::genFuncRecursive
     std::vector<const IRSymbol*> arg_syms;
     arg_syms.reserve(expr.num_args());
     for (uint i = 0; i < expr.num_args(); ++i) {
-//        llvm::outs()<<"expr>>>\n"<<expr.arg(i).to_string()<<"\n";
+        llvm::outs()<<"expr>>>\n"<<expr.arg(i).to_string()<<"\n";
 //        if(expr.arg(i).decl().decl_kind() >= Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN &&
 //            expr.arg(i).decl().decl_kind() <= Z3_OP_FPA_RM_TOWARD_ZERO){p
 //            continue;
@@ -686,7 +1052,7 @@ const IRSymbol* FPIRGenerator::genFuncRecursive
     }
     auto res_pair = insertSymbol(kind, expr, nullptr);
     res_pair.first->setValue(genExprIR(builder, res_pair.first, arg_syms, cov, totalCov, init_number));
-//    llvm::outs()<<"IR>>>\n"<<*res_pair.first->getValue()<<"\n";
+    llvm::outs()<<"IR>>>\n"<<*res_pair.first->getValue()<<"\n";
     if (expr.decl().decl_kind() == Z3_OP_FPA_TO_FP) {
       if (expr.num_args() == 1){
         if (fpa_util::isBVVar(expr.arg(0)))
@@ -739,7 +1105,7 @@ llvm::Value* FPIRGenerator::genExprIR
         (llvm::IRBuilder<>& builder, const IRSymbol* expr_sym, std::vector<const IRSymbol*>& arg_syms,
          llvm::Value* cov, llvm::Value* totalCov, std::vector<double> &init_number) noexcept
 {
-//    llvm::outs()<<"genExprIR>>>\n"<<expr_sym->isNegated()<<" "<<expr_sym->expr()->decl().name().str()<<"\n";
+    llvm::outs()<<"genExprIR>>>\n"<<expr_sym->isNegated()<<" "<<expr_sym->expr()->decl().name().str()<<"\n";
     using namespace llvm;
     switch (expr_sym->expr()->decl().decl_kind()) {
         // Boolean operations
@@ -793,17 +1159,37 @@ llvm::Value* FPIRGenerator::genExprIR
         case Z3_OP_FPA_MINUS_ZERO:
             return ConstantFP::get(builder.getDoubleTy(), -0.0);
         case Z3_OP_BADD:
-        case Z3_OP_ADD: // add by yx
-            return builder.CreateFAdd(arg_syms[0]->getValue(),
-                                    arg_syms[1]->getValue());
-        case Z3_OP_FPA_ADD:
+        case Z3_OP_ADD:{ // add by yx
+//            return builder.CreateFAdd(arg_syms[0]->getValue(),
+//                                      arg_syms[1]->getValue());
+            auto result = builder.CreateFAdd(arg_syms[0]->getValue(),
+                                             arg_syms[1]->getValue());
+            for (unsigned i = 2; i < arg_syms.size(); ++i) {
+                result = builder.CreateFAdd(result, arg_syms[i]->getValue());
+            }
+            return result;
+        }
+        case Z3_OP_FPA_ADD:{
             return builder.CreateFAdd(arg_syms[1]->getValue(),
                                       arg_syms[2]->getValue());
 
+//            auto result = builder.CreateFAdd(arg_syms[1]->getValue(),
+//                                             arg_syms[2]->getValue());
+//            for (unsigned i = 3; i < arg_syms.size(); ++i) {
+//                result = builder.CreateFAdd(result, arg_syms[i]->getValue());
+//            }
+        }
         case Z3_OP_BSUB:
-        case Z3_OP_SUB: // add by yx
-            return builder.CreateFSub(arg_syms[0]->getValue(),
-                                      arg_syms[1]->getValue());
+        case Z3_OP_SUB: { // add by yx
+//            return builder.CreateFSub(arg_syms[0]->getValue(),
+//                                      arg_syms[1]->getValue());
+            auto result = builder.CreateFSub(arg_syms[0]->getValue(),
+                                             arg_syms[1]->getValue());
+            for (unsigned i = 2; i < arg_syms.size(); ++i) {
+                result = builder.CreateFSub(result, arg_syms[i]->getValue());
+            }
+            return result;
+        }
         case Z3_OP_FPA_SUB:
             return builder.CreateFSub(arg_syms[1]->getValue(),
                                       arg_syms[2]->getValue());
@@ -817,19 +1203,34 @@ llvm::Value* FPIRGenerator::genExprIR
                     ConstantFP::get(builder.getDoubleTy(), -0.0),
                     arg_syms[0]->getValue());
         case Z3_OP_BMUL:// add by yx
-        case Z3_OP_MUL:// add by yx
+        case Z3_OP_MUL: {// add by yx
 //            llvm::outs()<<"[add by yx] Z3_OP_MUL:\n";
 //            llvm::outs()<<*arg_syms[0]->getValue()<<"\n";
 //            llvm::outs()<<*arg_syms[1]->getValue()<<"\n";
-            return builder.CreateFMul(arg_syms[0]->getValue(),
-                                      arg_syms[1]->getValue());
-        case Z3_OP_FPA_MUL:
+//            return builder.CreateFMul(arg_syms[0]->getValue(),
+//                                      arg_syms[1]->getValue());
+            auto result = builder.CreateFMul(arg_syms[0]->getValue(),
+                                             arg_syms[1]->getValue());
+            for (unsigned i = 2; i < arg_syms.size(); ++i) {
+                result = builder.CreateFMul(result, arg_syms[i]->getValue());
+            }
+            return result;
+        }
+        case Z3_OP_FPA_MUL:{
             return builder.CreateFMul(arg_syms[1]->getValue(),
                                       arg_syms[2]->getValue());
+        }
         case Z3_OP_BSDIV:
-        case Z3_OP_BUDIV:
-            return builder.CreateFDiv(arg_syms[0]->getValue(),
-                                      arg_syms[1]->getValue());
+        case Z3_OP_BUDIV: {
+//            return builder.CreateFDiv(arg_syms[0]->getValue(),
+//                                      arg_syms[1]->getValue());
+            auto result = builder.CreateFDiv(arg_syms[0]->getValue(),
+                                             arg_syms[1]->getValue());
+            for (unsigned i = 2; i < arg_syms.size(); ++i) {
+                result = builder.CreateFDiv(result, arg_syms[i]->getValue());
+            }
+            return result;
+        }
         case Z3_OP_FPA_DIV:
             return builder.CreateFDiv(arg_syms[1]->getValue(),
                                       arg_syms[2]->getValue());
@@ -947,6 +1348,7 @@ llvm::Value* FPIRGenerator::genExprIR
             } else {
                 auto comp_res = builder.CreateFCmpOLE(arg_syms[0]->getValue(),
                                                       arg_syms[1]->getValue());
+//                llvm::outs()<<comp_res->dump()<<"\n";
                 return genBinArgCmpIR(builder, arg_syms, comp_res);
 //                return genBinArgCmpIR3(builder, arg_syms, comp_res, Z3_OP_FPA_LE);
             }
@@ -1125,6 +1527,8 @@ llvm::Value* FPIRGenerator::genExprIR
         case Z3_OP_BAND:
             return builder.CreateCall(m_func_band, {arg_syms[0]->getValue(),
                                                     arg_syms[1]->getValue()});
+//        case Z3_OP_BOR:
+//            return 1;
         case Z3_OP_FPA_TO_IEEE_BV:
         case Z3_OP_FPA_TO_UBV:
         case Z3_OP_FPA_TO_SBV:
