@@ -21,6 +21,7 @@ public:
     static const std::string kFunInput;
     static const std::string kFunDis;
 //    [add by yx]
+    static const std::string kFun32Dis;
     static const std::string kFunGtDis;
     static const std::string kFunLtDis;
     static const std::string kFunGeDis;

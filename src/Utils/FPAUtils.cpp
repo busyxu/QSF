@@ -68,6 +68,54 @@ double fp64_dis(const double a, const double b)
 //    return fabs(a-b);
 }
 
+double fp32_dis(const float a, const float b)
+{
+    /*
+   * Helpful. Ordered layout of FP32
+   * 1 11111111 ----------------------- -nan
+   * 1 11111111 00000000000000000000000 -oo
+   * 1 -------- ----------------------- -norm
+   * 1 00000000 ----------------------- -denorm
+   * 1 00000000 00000000000000000000000 -o
+   * 0 11111111 ----------------------- +nan
+   * 0 11111111 00000000000000000000000 +oo
+   * 0 -------- ----------------------- +norm
+   * 0 00000000 ----------------------- +denorm
+   * 0 00000000 00000000000000000000000 +o
+   */
+//  printf("dis:\n%lf\n%lf\n________\n",a,b);
+    if (a == b) {
+//        printf("a: %lf\nb: %lf\n",a,b);
+        return 0;
+    }
+//    if ( std::isnan(a) || std::isnan(b)) {
+//        // any non-zero should do
+//        return 1024;
+//    }
+//    integer representation of double, the degree of the distance of two integers as some as two integers
+    const double scale = pow(2, 32)-1;
+    //the double 'a' and 'b' as 'int' dereference
+    uint64_t a_uint = *(const uint64_t*) (&a);
+    uint64_t b_uint = *(const uint64_t*) (&b);
+    if ((a_uint & 0x8000000000000000) != (b_uint & 0x8000000000000000)) {
+        // signs are not equal return sum (a+b)
+        return ((double)
+                ((a_uint & 0x7FFFFFFFFFFFFFFF) +
+                 (b_uint & 0x7FFFFFFFFFFFFFFF))) / scale;
+    }
+    b_uint &= 0x7FFFFFFFFFFFFFFF;
+    a_uint &= 0x7FFFFFFFFFFFFFFF;
+
+//    printf("%d\n%d\n%lf\n________\n",a_uint,b_uint,((double) (b_uint - a_uint)) / scale);
+    if (a_uint < b_uint) {
+        return ((double) (b_uint - a_uint)) / scale;
+    }
+    return ((double) (a_uint - b_uint)) / scale;
+
+//    printf("%lf\n%lf\n%lf\n________\n",a,b,fabs(a-b));
+//    return fabs(a-b);
+}
+
 double fp64_gt_dis(const double a, const double b)
 {
 //  printf("gt:\n%lf\n%lf\n",a,b);

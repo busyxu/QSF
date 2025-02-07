@@ -56,7 +56,7 @@ NLoptOptimizer::NLoptOptimizer(nlopt_algorithm global_alg,
 
 int
 NLoptOptimizer::optimize
-        (nlopt_func func, unsigned dim, double* x, double* seed, int seed_size, double* min) const noexcept
+        (nlopt_func func, unsigned dim, double* x, double* seed, int seed_size, double* min, int max_time, int pop_size) const noexcept
 {
     double cov=1024;
     double totalCov = 0;
@@ -85,14 +85,15 @@ NLoptOptimizer::optimize
     nlopt_set_stopval(opt, 0);
 //    nlopt_set_xtol_rel(opt, Config.RelTolerance);
 //    nlopt_set_maxeval(opt, Config.MaxEvalCount);
-    nlopt_set_maxtime(opt, 60);//60s
-    nlopt_set_population(opt, 200);
+    nlopt_set_maxtime(opt, max_time);
+//    nlopt_set_population(opt, pop_size);
 //    nlopt_set_maxtime(opt, 90);//30s
 //    nlopt_set_population(opt, 300);
-    nlopt_set_outData(opt, seed, seed_size);//add by yx, where, *grad is init value.What is the effect of the value
+    nlopt_set_outSeed(opt, seed, seed_size);//add by yx, where, *grad is init value.What is the effect of the value
 
     if (NLoptOptimizer::isRequirePopulation(m_global_opt_alg)) {
-        nlopt_set_population(opt, Config.InitialPopulation);
+//        nlopt_set_population(opt, Config.InitialPopulation);
+        nlopt_set_population(opt, pop_size);
     }
     if (!NLoptOptimizer::isRequireLocalOptAlg(m_global_opt_alg)) {
         auto status = nlopt_optimize(opt, x, min);
@@ -146,7 +147,8 @@ NLoptOptimizer::isSupportedGlobalOptAlg(nlopt_algorithm opt_alg) noexcept
         case NLOPT_GN_BYTEEA://add by yx
         case NLOPT_GN_GA://add by yx
         case NLOPT_GN_MOEA://add by yx
-        case NLOPT_GN_SOEA: //add by yx
+        case NLOPT_GN_SOEACov: //add by yx
+        case NLOPT_GN_SOEADis: //add by yx
         case NLOPT_GN_NSGA2: //add by yx
             return true;
         default:
@@ -165,7 +167,8 @@ NLoptOptimizer::isRequirePopulation(nlopt_algorithm opt_alg) noexcept
         case NLOPT_GN_BYTEEA:
         case NLOPT_GN_GA://add by yx
         case NLOPT_GN_MOEA://add by yx
-        case NLOPT_GN_SOEA://add by yx
+        case NLOPT_GN_SOEACov://add by yx
+        case NLOPT_GN_SOEADis://add by yx
         case NLOPT_GN_NSGA2://add by yx
             return true;
         default:

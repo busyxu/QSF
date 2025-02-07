@@ -15,6 +15,7 @@ const std::string CodeGenStr::kFunName = "gofunc";
 const std::string CodeGenStr::kFunInput = "x";
 const std::string CodeGenStr::kFunDis = "fp64_dis";
 //[add by yx]
+const std::string CodeGenStr::kFun32Dis = "fp32_dis";
 const std::string CodeGenStr::kFunGtDis = "fp64_gt_dis";
 const std::string CodeGenStr::kFunLtDis = "fp64_lt_dis";
 const std::string CodeGenStr::kFunGeDis = "fp64_ge_dis";

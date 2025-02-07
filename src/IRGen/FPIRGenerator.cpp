@@ -290,6 +290,7 @@ llvm::Function* FPIRGenerator::genFunction
 
     // Initialize external functions to be linked to JIT
     Type *DoubleTY = Type::getDoubleTy(*m_ctx);
+    Type *FloatTY = Type::getFloatTy(*m_ctx);
     Type *BoolTY = Type::getInt1Ty(*m_ctx);
     Type *Int32TY = Type::getInt32Ty(*m_ctx);
 
@@ -307,6 +308,10 @@ llvm::Function* FPIRGenerator::genFunction
     m_func_fp64_dis = cast<Function>(
             m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunDis),
                                        DoubleTY,DoubleTY,DoubleTY));
+
+    m_func_fp32_dis = cast<Function>(
+            m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFun32Dis),
+                                       FloatTY,FloatTY,FloatTY));
 
   m_func_fp64_gt_dis = cast<Function>(
           m_mod->getOrInsertFunction(StringRef(CodeGenStr::kFunGtDis),
@@ -1042,17 +1047,18 @@ const IRSymbol* FPIRGenerator::genFuncRecursive
     std::vector<const IRSymbol*> arg_syms;
     arg_syms.reserve(expr.num_args());
     for (uint i = 0; i < expr.num_args(); ++i) {
-        llvm::outs()<<"expr>>>\n"<<expr.arg(i).to_string()<<"\n";
+//        llvm::outs()<<"expr>>>\n"<<expr.arg(i).to_string()<<"\n";
 //        if(expr.arg(i).decl().decl_kind() >= Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN &&
 //            expr.arg(i).decl().decl_kind() <= Z3_OP_FPA_RM_TOWARD_ZERO){p
 //            continue;
 //        }
         auto arg_sym = genFuncRecursive(builder, expr.arg(i), is_negated, cov, totalCov, init_number);
         arg_syms.push_back(arg_sym);
+//        llvm::outs()<<arg_sym->expr()->to_string()<<"\n";
     }
     auto res_pair = insertSymbol(kind, expr, nullptr);
     res_pair.first->setValue(genExprIR(builder, res_pair.first, arg_syms, cov, totalCov, init_number));
-    llvm::outs()<<"IR>>>\n"<<*res_pair.first->getValue()<<"\n";
+//    llvm::outs()<<"IR>>>\n"<<*res_pair.first->getValue()<<"\n";
     if (expr.decl().decl_kind() == Z3_OP_FPA_TO_FP) {
       if (expr.num_args() == 1){
         if (fpa_util::isBVVar(expr.arg(0)))
@@ -1105,7 +1111,7 @@ llvm::Value* FPIRGenerator::genExprIR
         (llvm::IRBuilder<>& builder, const IRSymbol* expr_sym, std::vector<const IRSymbol*>& arg_syms,
          llvm::Value* cov, llvm::Value* totalCov, std::vector<double> &init_number) noexcept
 {
-    llvm::outs()<<"genExprIR>>>\n"<<expr_sym->isNegated()<<" "<<expr_sym->expr()->decl().name().str()<<"\n";
+//    llvm::outs()<<"genExprIR>>>\n"<<expr_sym->isNegated()<<" "<<expr_sym->expr()->decl().name().str()<<"\n";
     using namespace llvm;
     switch (expr_sym->expr()->decl().decl_kind()) {
         // Boolean operations
@@ -1690,8 +1696,42 @@ llvm::Value* FPIRGenerator::genBinArgCmpIR
 //    llvm::Value* load_cov_value = builder.CreateLoad(cov);
 //    llvm::Value* new_cov_value = builder.CreateFAdd(load_cov_value, m_const_one);
 //    builder.CreateStore(new_cov_value, cov);
+//    CallInst *call_res = nullptr;
+//    if(arg_syms[0]->kind()==SymbolKind::kFP64Const || arg_syms[0]->kind()==SymbolKind::kFP64Var \
+//        || arg_syms[1]->kind()==SymbolKind::kFP64Const || arg_syms[1]->kind()==SymbolKind::kFP64Var){
+//        call_res = builder.CreateCall(m_func_fp64_dis, {arg_syms[0]->getValue(),
+//                                                             arg_syms[1]->getValue()});
+//    }
+//    else if(arg_syms[0]->kind()==SymbolKind::kExpr){
+//        unsigned sigd = Z3_fpa_get_sbits(arg_syms[0]->expr()->ctx(), arg_syms[0]->expr()->get_sort());
+//        unsigned expo = Z3_fpa_get_ebits(arg_syms[0]->expr()->ctx(), arg_syms[0]->expr()->get_sort());
+//        if(fpa_util::isFloat64(expo,sigd)){
+//            call_res = builder.CreateCall(m_func_fp64_dis, {arg_syms[0]->getValue(),
+//                                                            arg_syms[1]->getValue()});
+//        }
+//        else{
+//            call_res = builder.CreateCall(m_func_fp32_dis, {arg_syms[0]->getValue(),
+//                                                            arg_syms[1]->getValue()});
+//        }
+//    }
+//    else if(arg_syms[1]->kind()==SymbolKind::kExpr){
+//        unsigned sigd = Z3_fpa_get_sbits(arg_syms[1]->expr()->ctx(), arg_syms[1]->expr()->get_sort());
+//        unsigned expo = Z3_fpa_get_ebits(arg_syms[1]->expr()->ctx(), arg_syms[1]->expr()->get_sort());
+//        if(fpa_util::isFloat64(expo,sigd)){
+//            call_res = builder.CreateCall(m_func_fp64_dis, {arg_syms[0]->getValue(),
+//                                                            arg_syms[1]->getValue()});
+//        }
+//        else{
+//            call_res = builder.CreateCall(m_func_fp32_dis, {arg_syms[0]->getValue(),
+//                                                            arg_syms[1]->getValue()});
+//        }
+//    }
+//    else{
+//        call_res = builder.CreateCall(m_func_fp32_dis, {arg_syms[0]->getValue(),
+//                                                        arg_syms[1]->getValue()});
+//    }
     auto call_res = builder.CreateCall(m_func_fp64_dis, {arg_syms[0]->getValue(),
-                                                    arg_syms[1]->getValue()});
+                                                             arg_syms[1]->getValue()});
     call_res->setTailCall(false);
     builder.CreateBr(bb_second);
     builder.SetInsertPoint(bb_second);
@@ -1974,6 +2014,7 @@ void FPIRGenerator::addGlobalFunctionMappings(llvm::ExecutionEngine *engine)
     double (*func_ptr_dis)(double, double) = fp64_dis;
 
     //add by yx
+    double (*func_ptr_32_dis)(float, float) = fp32_dis;
     double (*func_ptr_gt_dis)(double, double) = fp64_gt_dis;
     double (*func_ptr_lt_dis)(double, double) = fp64_lt_dis;
     double (*func_ptr_ge_dis)(double, double) = fp64_ge_dis;
@@ -2025,6 +2066,7 @@ void FPIRGenerator::addGlobalFunctionMappings(llvm::ExecutionEngine *engine)
 
     engine->addGlobalMapping(this->m_func_fp64_dis, (void *)func_ptr_dis);
 //    [add by yx]
+    engine->addGlobalMapping(this->m_func_fp32_dis, (void *)func_ptr_32_dis);
     engine->addGlobalMapping(this->m_func_fp64_gt_dis, (void *)func_ptr_gt_dis);
     engine->addGlobalMapping(this->m_func_fp64_lt_dis, (void *)func_ptr_lt_dis);
     engine->addGlobalMapping(this->m_func_fp64_ge_dis, (void *)func_ptr_gt_dis);

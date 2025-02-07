@@ -42,7 +42,7 @@ public:
 
     int optimize
             (nlopt_func func, unsigned dim, double* x, double* seed, int seed_size,
-             double* min) const noexcept;
+             double* min, int max_time, int pop_size) const noexcept;
 
     double eval
             (nlopt_func func, unsigned dim, const double* x) const noexcept;

@@ -15,6 +15,7 @@
 
 double fp64_dis(double a, double b);
 //add by yx
+double fp32_dis(float a, float b);
 double fp64_gt_dis(double a, double b);
 double fp64_lt_dis(double a, double b);
 double fp64_ge_dis(double a, double b);

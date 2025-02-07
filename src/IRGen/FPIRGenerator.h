@@ -147,6 +147,7 @@ private:
     llvm::Function* m_gofunc;
     llvm::Function* m_func_fp64_dis;
 //    [add by yx]
+    llvm::Function* m_func_fp32_dis;
     llvm::Function* m_func_fp64_gt_dis;
     llvm::Function* m_func_fp64_lt_dis;
     llvm::Function* m_func_fp64_ge_dis;

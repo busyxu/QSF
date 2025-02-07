@@ -21,16 +21,16 @@ set(Z3_INCLUDE_DIR ${Z3_INCLUDE_DIR} CACHE PATH "Path to Z3 include directory")
 set(libnlopt-path ${libnlopt-path} CACHE PATH "Path to libnlopt.so")
 set(NLOPT_INCLUDE_DIR ${NLOPT_INCLUDE_DIR} CACHE PATH "Path to NLOPT include directory")
 
-## add by zgf
-#set(libz3-path /home/aaa/fp-solver/z3-4.6.2/install/lib/libz3.so)
-#set(Z3_INCLUDE_DIR /home/aaa/fp-solver/z3-4.6.2/install/include)
-#
-##set(libnlopt-path /home/aaa/nlopt2/build/libnlopt2.so)
-#set(libnlopt-path /home/aaa/nlopt2/build-debug/libnlopt2.so)
-#set(NLOPT_INCLUDE_DIR /home/aaa/nlopt2/install/include)
-#
-#set(LLVM_DIR /home/aaa/fp-solver/llvm-6/install/lib/cmake/llvm)
-##set(LLVM_DIR /home/aaa/llvm-6/install/lib/cmake/llvm)
+# add by zgf
+set(libz3-path /home/aaa/fp-solver/z3-4.6.2/install/lib/libz3.so)
+set(Z3_INCLUDE_DIR /home/aaa/fp-solver/z3-4.6.2/install/include)
+
+#set(libnlopt-path /home/aaa/nlopt2/build/libnlopt2.so)
+set(libnlopt-path /home/aaa/nlopt2/build-debug/libnlopt2.so)
+set(NLOPT_INCLUDE_DIR /home/aaa/nlopt2/install/include)
+
+set(LLVM_DIR /home/aaa/fp-solver/llvm-6/install/lib/cmake/llvm)
+#set(LLVM_DIR /home/aaa/llvm-6/install/lib/cmake/llvm)
 
 # Finds and configures LLVM build directories
 find_package(LLVM REQUIRED CONFIG)
