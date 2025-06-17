@@ -49,4 +49,4 @@ find any such cases.
 
   [Z3]: <https://github.com/Z3Prover/z3>
   [LLVM]: <http://llvm.org/>
-  [NLopt-MOCEA]: <https://github.com/busyxu/nlopt-mocea>
+  [NLopt2]: <https://github.com/busyxu/nlopt-mocea>
