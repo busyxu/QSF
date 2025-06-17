@@ -428,14 +428,14 @@ int main(int argc, const char** argv)
                 std::cout << std::setprecision(dbl::digits10) << minima << ","
                           << status;
             }
-    //            if ((minima == 0 || status==2) && validate_model) {
-    //                gosat::ModelValidator validator(&ir_gen);
-    //                if (validator.isValid(smt_expr, model_vec)) {
-    //                    std::cout << ",valid";
-    //                } else {
-    //                    std::cout << ",invalid";
-    //                }
-    //            }
+//                if ((minima == 0 || status==2) && validate_model) {
+//                    gosat::ModelValidator validator(&ir_gen);
+//                    if (validator.isValid(smt_expr, model_vec)) {
+//                        std::cout << ",valid";
+//                    } else {
+//                        std::cout << ",invalid";
+//                    }
+//                }
 
     //            if ((minima == 0 || status==2) && validate_model) {
     //                for (auto var : ir_gen.getVars()){
